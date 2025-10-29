@@ -10,7 +10,6 @@ import type {
   NodeExecutionBlock,
   PreviewPanelState,
   StartExecutionPayload,
-  StreamingMessage,
 } from "@/types/preview";
 import type { StartNodeData } from "@/types/workflow";
 import type { WorkflowEvent } from "@/types/execution";
@@ -183,23 +182,6 @@ export function PreviewPanel({
 
     return Array.from(blocks.values()).sort((a, b) => a.startedAt - b.startedAt);
   }, [events, nodes, currentExecutionId]);
-
-  // Convert stream buffers to streaming message
-  const streamingMessage: StreamingMessage | null = useMemo(() => {
-    if (streamBuffers.size === 0) return null;
-
-    // Get first stream buffer (usually only one)
-    const firstBuffer = Array.from(streamBuffers.values())[0];
-    return firstBuffer
-      ? {
-          id: `stream-${Date.now()}`,
-          role: "agent" as const,
-          content: firstBuffer,
-          isComplete: false,
-          timestamp: Date.now(),
-        }
-      : null;
-  }, [streamBuffers]);
 
   // Start execution handler
   const handleStartExecution = (payload: StartExecutionPayload) => {

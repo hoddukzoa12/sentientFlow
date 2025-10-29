@@ -87,19 +87,30 @@ export function useWorkflowExecution(
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        // Parse SSE stream
+        // Parse SSE stream - Framework Event format
         for await (const event of parseSSEStream(response)) {
-          const eventType = event.type;
-          const eventData = JSON.parse(event.data);
+          const eventName = event.type;  // Framework event_name
+          const eventData = JSON.parse(event.data);  // Full Event object
 
-          if (eventType === "TEXT_BLOCK") {
-            // Track node execution state
-            if (eventData.eventName === "NODE_START" && eventData.nodeId) {
-              setExecutingNodeId(eventData.nodeId);
-            } else if (eventData.eventName === "NODE_COMPLETE" && eventData.nodeId) {
-              setCompletedNodes((prev) => new Set(prev).add(eventData.nodeId));
+          // Parse nodeId from event_name (encoded as "event_name::node_id")
+          let actualEventName = eventName;
+          let nodeId: string | undefined;
+
+          if (eventName.includes("::")) {
+            const parts = eventName.split("::", 2);
+            actualEventName = parts[0];
+            nodeId = parts[1];
+          }
+
+          // Handle events by content_type
+          if (eventData.content_type === "atomic.textblock") {
+            // TEXT_BLOCK event
+            if (actualEventName === "NODE_START" && nodeId) {
+              setExecutingNodeId(nodeId);
+            } else if (actualEventName === "NODE_COMPLETE" && nodeId) {
+              setCompletedNodes((prev) => new Set(prev).add(nodeId));
               setExecutingNodeId(null);
-            } else if (eventData.eventName === "WORKFLOW_COMPLETE") {
+            } else if (actualEventName === "WORKFLOW_COMPLETE") {
               setExecutingNodeId(null);
             }
 
@@ -108,66 +119,73 @@ export function useWorkflowExecution(
               {
                 type: "TEXT_BLOCK",
                 timestamp: Date.now(),
-                eventName: eventData.eventName,
+                eventName: actualEventName,
                 content: eventData.content,
-                nodeId: eventData.nodeId,
+                nodeId: nodeId,
               },
             ]);
-          } else if (eventType === "TEXT_CHUNK") {
-            // Add TEXT_CHUNK to events array for PreviewPanel
+          } else if (eventData.content_type === "chunked.text") {
+            // TEXT_CHUNK event
+            const streamId = eventData.stream_id;
+            const content = eventData.content;
+            const isComplete = eventData.is_complete;
+
             setEvents((prev) => [
               ...prev,
               {
                 type: "TEXT_CHUNK",
                 timestamp: Date.now(),
-                streamId: eventData.streamId,
-                eventName: eventData.eventName,
-                content: eventData.content,
-                isComplete: eventData.isComplete,
-                nodeId: eventData.nodeId,
+                streamId: streamId,
+                eventName: actualEventName,
+                content: content,
+                isComplete: isComplete,
+                nodeId: nodeId,
               },
             ]);
 
             // Keep existing streamBuffers logic for compatibility
             setStreamBuffers((prev) => {
               const newBuffers = new Map(prev);
-              const currentContent = newBuffers.get(eventData.streamId) || "";
+              const currentContent = newBuffers.get(streamId) || "";
 
-              if (eventData.isComplete) {
+              if (isComplete) {
                 // Stream complete
-                newBuffers.delete(eventData.streamId);
+                newBuffers.delete(streamId);
               } else {
                 // Append chunk
-                newBuffers.set(eventData.streamId, currentContent + eventData.content);
+                newBuffers.set(streamId, currentContent + content);
               }
 
               return newBuffers;
             });
-          } else if (eventType === "JSON") {
+          } else if (eventData.content_type === "atomic.json") {
+            // JSON event
             setEvents((prev) => [
               ...prev,
               {
                 type: "JSON",
                 timestamp: Date.now(),
-                eventName: eventData.eventName,
-                content: eventData.content,
-                nodeId: eventData.nodeId,
+                eventName: actualEventName,
+                content: eventData.data,
+                nodeId: nodeId,
               },
             ]);
-          } else if (eventType === "ERROR") {
+          } else if (eventData.content_type === "atomic.error") {
+            // ERROR event
             setEvents((prev) => [
               ...prev,
               {
                 type: "ERROR",
                 timestamp: Date.now(),
-                errorMessage: eventData.errorMessage,
-                errorCode: eventData.errorCode,
-                nodeId: eventData.nodeId,
+                errorMessage: eventData.content.error_message,
+                errorCode: eventData.content.error_code,
+                nodeId: nodeId,
               },
             ]);
             setStatus("error");
             break;
-          } else if (eventType === "DONE") {
+          } else if (eventData.content_type === "atomic.done") {
+            // DONE event
             setEvents((prev) => [
               ...prev,
               {
