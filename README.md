@@ -57,22 +57,54 @@ graph TB
 
 ### Prerequisites
 
-- **Frontend**: Node.js 18+, npm
-- **Backend**: Python 3.9+, pip
-- **API Key**: OpenAI API key
+- **Node.js 18+** and **npm**
+- **Python 3.9+** and **pip**
+- **OpenAI API key**
 
-### Frontend Setup
+### Option 1: Automated Setup (Recommended)
 
+**Install dependencies:**
+```bash
+# Mac/Linux
+./install.sh
+
+# Windows
+install.bat
+
+# Or using npm
+npm install
+```
+
+**Configure API key:**
+```bash
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your OPENAI_API_KEY
+```
+
+**Start both servers:**
+```bash
+# Mac/Linux
+./start.sh
+
+# Windows
+start.bat
+
+# Or using npm
+npm start
+```
+
+Frontend: `http://localhost:3000` | Backend: `http://localhost:8000`
+
+### Option 2: Manual Setup
+
+**Frontend:**
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev  # Runs at http://localhost:3000
 ```
 
-Frontend runs at `http://localhost:3000`
-
-### Backend Setup
-
+**Backend:**
 ```bash
 cd backend
 python3 -m venv venv
@@ -84,10 +116,8 @@ cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
 
 # Start server
-python main.py
+python main.py  # Runs at http://localhost:8000
 ```
-
-Backend runs at `http://localhost:8000`
 
 ### Create Your First Workflow
 
@@ -211,8 +241,8 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/sentientFlow/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/sentientFlow/discussions)
+- **Issues**: [GitHub Issues](https://github.com/hoddukzoa12/sentientFlow/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/hoddukzoa12/sentientFlow/discussions)
 
 ---
 

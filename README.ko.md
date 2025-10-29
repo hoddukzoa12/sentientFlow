@@ -57,22 +57,54 @@ graph TB
 
 ### 사전 요구 사항
 
-- **프론트엔드**: Node.js 18+, npm
-- **백엔드**: Python 3.9+, pip
-- **API 키**: OpenAI API 키
+- **Node.js 18+** 및 **npm**
+- **Python 3.9+** 및 **pip**
+- **OpenAI API 키**
 
-### 프론트엔드 설정
+### 방법 1: 자동 설정 (권장)
 
+**의존성 설치:**
+```bash
+# Mac/Linux
+./install.sh
+
+# Windows
+install.bat
+
+# 또는 npm 사용
+npm install
+```
+
+**API 키 설정:**
+```bash
+cp backend/.env.example backend/.env
+# backend/.env 파일을 열어 OPENAI_API_KEY 추가
+```
+
+**서버 실행:**
+```bash
+# Mac/Linux
+./start.sh
+
+# Windows
+start.bat
+
+# 또는 npm 사용
+npm start
+```
+
+프론트엔드: `http://localhost:3000` | 백엔드: `http://localhost:8000`
+
+### 방법 2: 수동 설정
+
+**프론트엔드:**
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev  # http://localhost:3000에서 실행
 ```
 
-프론트엔드는 `http://localhost:3000`에서 실행됩니다
-
-### 백엔드 설정
-
+**백엔드:**
 ```bash
 cd backend
 python3 -m venv venv
@@ -84,10 +116,8 @@ cp .env.example .env
 # .env 파일을 열어 OPENAI_API_KEY 추가
 
 # 서버 시작
-python main.py
+python main.py  # http://localhost:8000에서 실행
 ```
-
-백엔드는 `http://localhost:8000`에서 실행됩니다
 
 ### 첫 번째 워크플로우 만들기
 
@@ -211,8 +241,8 @@ sentientFlow/
 
 ## 📞 지원
 
-- **이슈**: [GitHub Issues](https://github.com/yourusername/sentientFlow/issues)
-- **토론**: [GitHub Discussions](https://github.com/yourusername/sentientFlow/discussions)
+- **이슈**: [GitHub Issues](https://github.com/hoddukzoa12/sentientFlow/issues)
+- **토론**: [GitHub Discussions](https://github.com/hoddukzoa12/sentientFlow/discussions)
 
 ---
 

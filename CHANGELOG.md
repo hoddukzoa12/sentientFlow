@@ -62,5 +62,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive type safety
 - Clear project structure and separation of concerns
 
-[Unreleased]: https://github.com/yourusername/sentientFlow/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/sentientFlow/releases/tag/v0.1.0
+[Unreleased]: https://github.com/hoddukzoa12/sentientFlow/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/hoddukzoa12/sentientFlow/releases/tag/v0.1.0

@@ -1,0 +1,33 @@
+{
+  "name": "sentientflow",
+  "version": "0.1.0",
+  "description": "Visual workflow builder for AI agents powered by Sentient Agent Framework",
+  "private": true,
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt",
+    "install": "npm run install:frontend && npm run install:backend",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && . venv/bin/activate && python main.py",
+    "start": "concurrently -n \"Frontend,Backend\" -c \"cyan,magenta\" \"npm run start:frontend\" \"npm run start:backend\"",
+    "build": "cd frontend && npm run build",
+    "clean": "rm -rf frontend/node_modules frontend/.next backend/venv backend/__pycache__ backend/**/__pycache__"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3"
+  },
+  "keywords": [
+    "ai",
+    "workflow",
+    "agent",
+    "sentient",
+    "visual-builder",
+    "no-code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hoddukzoa12/sentientFlow.git"
+  },
+  "license": "MIT"
+}
