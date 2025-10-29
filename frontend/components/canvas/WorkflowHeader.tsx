@@ -17,7 +17,11 @@ import {
 } from "lucide-react";
 import { useWorkflowStore } from "@/lib/store/workflow-store";
 
-export function WorkflowHeader() {
+interface WorkflowHeaderProps {
+  onPreviewToggle?: () => void;
+}
+
+export function WorkflowHeader({ onPreviewToggle }: WorkflowHeaderProps) {
   const router = useRouter();
   const { workflowName, workflowVersion, setWorkflowName, setWorkflowVersion } =
     useWorkflowStore();
@@ -189,7 +193,10 @@ export function WorkflowHeader() {
           <span>Code</span>
         </button>
 
-        <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+        <button
+          onClick={onPreviewToggle}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+        >
           <Eye size={16} />
           <span>Preview</span>
         </button>

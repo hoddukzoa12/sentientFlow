@@ -1,19 +1,24 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { FlowCanvas } from "@/components/canvas/FlowCanvas";
 import { WorkflowHeader } from "@/components/canvas/WorkflowHeader";
 import { NodePanel } from "@/components/panels/NodePanel";
 import { PropertiesPanel } from "@/components/panels/PropertiesPanel";
-import { ExecutionPanel } from "@/components/execution/ExecutionPanel";
+import { PreviewPanel } from "@/components/preview/PreviewPanel";
 import { useWorkflowStore } from "@/lib/store/workflow-store";
-import type { NodeType, WorkflowNode } from "@/types/workflow";
+import type { NodeType, WorkflowNode, StartNodeData } from "@/types/workflow";
 import { findNonOverlappingPosition, NODE_DIMENSIONS } from "@/lib/utils/node-collision";
 import { getDefaultNodeData } from "@/lib/utils/node-defaults";
 
 export default function WorkflowEditorPage() {
   const { nodes, selectedNodeId, addNode } = useWorkflowStore();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  // Get Start node data for PreviewPanel
+  const startNode = nodes.find((node) => node.type === "start");
+  const startNodeData = startNode?.data as StartNodeData | null;
 
   // Add a Start node automatically when the workflow is empty
   useEffect(() => {
@@ -66,31 +71,45 @@ export default function WorkflowEditorPage() {
     <ReactFlowProvider>
       <div className="flex flex-col h-screen w-screen overflow-hidden bg-black">
         {/* Header */}
-        <WorkflowHeader />
+        <WorkflowHeader onPreviewToggle={() => setIsPreviewOpen(!isPreviewOpen)} />
 
-        {/* Main Content - Canvas with floating panels */}
-        <div className="relative flex-1 overflow-hidden">
-          {/* Full Canvas */}
-          <div className="w-full h-full">
-            <FlowCanvas onNodeDrop={handleNodeDrop} />
+        {/* Main Content - Split Layout */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Side - Workflow Canvas */}
+          <div className={`relative flex-1 ${isPreviewOpen ? "w-[70%]" : "w-full"} overflow-hidden`}>
+            {/* Full Canvas */}
+            <div className="w-full h-full">
+              <FlowCanvas
+                onNodeDrop={handleNodeDrop}
+                isInteractive={!isPreviewOpen}
+              />
+            </div>
+
+            {/* Floating Left Panel - Node Palette (hidden in Preview mode) */}
+            {!isPreviewOpen && (
+              <div className="absolute top-4 left-4 z-10">
+                <NodePanel />
+              </div>
+            )}
+
+            {/* Floating Right Panel - Properties (hidden in Preview mode) */}
+            {selectedNodeId && !isPreviewOpen && (
+              <div className="absolute top-4 right-4 z-10 max-h-[calc(100vh-120px)] overflow-hidden">
+                <PropertiesPanel />
+              </div>
+            )}
           </div>
 
-          {/* Floating Left Panel - Node Palette */}
-          <div className="absolute top-4 left-4 z-10">
-            <NodePanel />
-          </div>
-
-          {/* Floating Right Panel - Properties (conditional) */}
-          {selectedNodeId && (
-            <div className="absolute top-4 right-4 z-10 max-h-[calc(100vh-120px)] overflow-hidden">
-              <PropertiesPanel />
+          {/* Right Side - Preview Panel (30% width when open) */}
+          {isPreviewOpen && (
+            <div className="w-[30%] min-w-[400px]">
+              <PreviewPanel
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                startNodeData={startNodeData}
+              />
             </div>
           )}
-
-          {/* Floating Bottom Right Panel - Execution */}
-          <div className="absolute bottom-4 right-4 z-10 w-[400px] h-[500px] rounded-lg overflow-hidden shadow-2xl">
-            <ExecutionPanel />
-          </div>
         </div>
       </div>
     </ReactFlowProvider>

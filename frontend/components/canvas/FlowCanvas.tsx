@@ -53,9 +53,10 @@ const nodeTypes: NodeTypes = {
 
 interface FlowCanvasProps {
   onNodeDrop?: (type: NodeType, position: { x: number; y: number }) => void;
+  isInteractive?: boolean;
 }
 
-export function FlowCanvas({ onNodeDrop }: FlowCanvasProps) {
+export function FlowCanvas({ onNodeDrop, isInteractive = true }: FlowCanvasProps) {
   const { nodes, edges, setNodes, setEdges, addEdge: addWorkflowEdge, selectNode, deleteNode } = useWorkflowStore();
   const reactFlowInstance = useReactFlow();
 
@@ -250,6 +251,10 @@ export function FlowCanvas({ onNodeDrop }: FlowCanvasProps) {
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeDragStop={onNodeDragStop}
         onPaneClick={onPaneClick}
+        nodesDraggable={isInteractive}
+        nodesConnectable={isInteractive}
+        elementsSelectable={isInteractive}
+        nodesFocusable={isInteractive}
         defaultViewport={{ x: 250, y: 150, zoom: 1 }}
         className="bg-black"
       >
