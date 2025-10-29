@@ -18,8 +18,10 @@ export function getDefaultNodeData(type: NodeType): any {
     case "agent":
       return {
         name: "My agent",
-        instructions: "You are a helpful assistant.",
-        model: "gpt-4.1",
+        systemPrompt: "You are a helpful assistant.",
+        userPrompt: "",  // Auto-uses input_as_text if empty
+        model: "gpt-5",
+        reasoningEffort: "medium",  // GPT-5 default
         includeHistory: true,
         tools: [],
         outputFormat: "text",

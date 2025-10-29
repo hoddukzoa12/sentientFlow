@@ -22,7 +22,10 @@ export default function WorkflowEditorPage() {
 
   // Add a Start node automatically when the workflow is empty
   useEffect(() => {
-    if (nodes.length === 0) {
+    // Create only when there is no Start node
+    const hasStartNode = nodes.some(node => node.type === "start");
+
+    if (!hasStartNode) {
       const desiredPosition = { x: 100, y: 250 };
       const position = findNonOverlappingPosition(desiredPosition, nodes, "start");
       const dimensions = NODE_DIMENSIONS["start"];
@@ -38,7 +41,7 @@ export default function WorkflowEditorPage() {
       };
       addNode(startNode);
     }
-  }, [nodes.length, addNode]);
+  }, [nodes, addNode]);
 
   // Handle node drop from NodePanel (coordinates transformed by FlowCanvas)
   const handleNodeDrop = useCallback(

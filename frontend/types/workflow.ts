@@ -36,17 +36,16 @@ export interface StartNodeData {
 
 export interface AgentNodeData {
   name: string;
-  instructions: string;
+  systemPrompt: string;
+  userPrompt: string;
   model: string;
-  modelSettings?: {
-    temperature?: number;
-    topP?: number;
-    maxTokens?: number;
-  };
+
+  // GPT-5 parameters
+  reasoningEffort?: "minimal" | "low" | "medium" | "high";
+
   includeHistory: boolean;
   tools?: string[];
   outputFormat: "text" | "json";
-  reasoningEffort?: "minimal" | "low" | "medium" | "high";
 }
 
 export interface EndNodeData {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { parseSSEStream } from "@/lib/utils/sse-parser";
 import type {
   WorkflowEvent,
   ExecutionStatus,
@@ -12,6 +13,9 @@ interface UseWorkflowExecutionReturn {
   events: WorkflowEvent[];
   status: ExecutionStatus;
   streamBuffers: Map<string, string>;
+  executingNodeId: string | null;
+  completedNodes: Set<string>;
+  currentExecutionId: string | null;
   execute: (request: Omit<WorkflowExecutionRequest, "workflowId">) => void;
   cancel: () => void;
   clear: () => void;
@@ -25,13 +29,16 @@ export function useWorkflowExecution(
   const [streamBuffers, setStreamBuffers] = useState<Map<string, string>>(
     new Map()
   );
+  const [executingNodeId, setExecutingNodeId] = useState<string | null>(null);
+  const [completedNodes, setCompletedNodes] = useState<Set<string>>(new Set());
+  const [currentExecutionId, setCurrentExecutionId] = useState<string | null>(null);
 
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const cancel = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
       setStatus("idle");
     }
   }, []);
@@ -40,138 +47,168 @@ export function useWorkflowExecution(
     setEvents([]);
     setStreamBuffers(new Map());
     setStatus("idle");
+    setExecutingNodeId(null);
+    setCompletedNodes(new Set());
   }, []);
 
   const execute = useCallback(
-    (request: Omit<WorkflowExecutionRequest, "workflowId">) => {
-      // Clear previous execution
-      clear();
+    async (request: Omit<WorkflowExecutionRequest, "workflowId">) => {
+      // Don't clear previous executions - keep chat history
+      // Only the Refresh button should clear history
+
+      // Generate unique execution ID for this workflow run
+      const executionId = `exec-${Date.now()}`;
+      setCurrentExecutionId(executionId);
       setStatus("running");
 
-      // Build query parameters
-      const params = new URLSearchParams({
-        workflowId,
-        inputVariables: JSON.stringify(request.inputVariables),
-      });
+      // Create AbortController for cancellation
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      // Create EventSource connection
-      const url = `http://localhost:8000/api/workflows/${workflowId}/execute?${params}`;
-      const eventSource = new EventSource(url);
-      eventSourceRef.current = eventSource;
-
-      // TEXT_BLOCK events
-      eventSource.addEventListener("TEXT_BLOCK", (e) => {
-        const data = JSON.parse(e.data);
-        setEvents((prev) => [
-          ...prev,
+      try {
+        // Send POST request with workflow data in body
+        const response = await fetch(
+          `http://localhost:8000/api/workflows/${workflowId}/execute`,
           {
-            type: "TEXT_BLOCK",
-            timestamp: Date.now(),
-            eventName: data.eventName,
-            content: data.content,
-            nodeId: data.nodeId,
-          },
-        ]);
-      });
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              workflowId,
+              workflowDefinition: request.workflowDefinition,
+              inputVariables: request.inputVariables,
+            }),
+            signal: controller.signal,
+          }
+        );
 
-      // TEXT_CHUNK events (streaming)
-      eventSource.addEventListener("TEXT_CHUNK", (e) => {
-        const data = JSON.parse(e.data);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-        setStreamBuffers((prev) => {
-          const newBuffers = new Map(prev);
-          const currentContent = newBuffers.get(data.streamId) || "";
+        // Parse SSE stream
+        for await (const event of parseSSEStream(response)) {
+          const eventType = event.type;
+          const eventData = JSON.parse(event.data);
 
-          if (data.isComplete) {
-            // Stream complete - move to events
-            newBuffers.delete(data.streamId);
-            setEvents((prevEvents) => [
-              ...prevEvents,
+          if (eventType === "TEXT_BLOCK") {
+            // Track node execution state
+            if (eventData.eventName === "NODE_START" && eventData.nodeId) {
+              setExecutingNodeId(eventData.nodeId);
+            } else if (eventData.eventName === "NODE_COMPLETE" && eventData.nodeId) {
+              setCompletedNodes((prev) => new Set(prev).add(eventData.nodeId));
+              setExecutingNodeId(null);
+            } else if (eventData.eventName === "WORKFLOW_COMPLETE") {
+              setExecutingNodeId(null);
+            }
+
+            setEvents((prev) => [
+              ...prev,
               {
                 type: "TEXT_BLOCK",
                 timestamp: Date.now(),
-                eventName: "STREAM_COMPLETE",
-                content: currentContent,
+                eventName: eventData.eventName,
+                content: eventData.content,
+                nodeId: eventData.nodeId,
               },
             ]);
-          } else {
-            // Append chunk
-            newBuffers.set(data.streamId, currentContent + data.content);
+          } else if (eventType === "TEXT_CHUNK") {
+            // Add TEXT_CHUNK to events array for PreviewPanel
+            setEvents((prev) => [
+              ...prev,
+              {
+                type: "TEXT_CHUNK",
+                timestamp: Date.now(),
+                streamId: eventData.streamId,
+                eventName: eventData.eventName,
+                content: eventData.content,
+                isComplete: eventData.isComplete,
+                nodeId: eventData.nodeId,
+              },
+            ]);
+
+            // Keep existing streamBuffers logic for compatibility
+            setStreamBuffers((prev) => {
+              const newBuffers = new Map(prev);
+              const currentContent = newBuffers.get(eventData.streamId) || "";
+
+              if (eventData.isComplete) {
+                // Stream complete
+                newBuffers.delete(eventData.streamId);
+              } else {
+                // Append chunk
+                newBuffers.set(eventData.streamId, currentContent + eventData.content);
+              }
+
+              return newBuffers;
+            });
+          } else if (eventType === "JSON") {
+            setEvents((prev) => [
+              ...prev,
+              {
+                type: "JSON",
+                timestamp: Date.now(),
+                eventName: eventData.eventName,
+                content: eventData.content,
+                nodeId: eventData.nodeId,
+              },
+            ]);
+          } else if (eventType === "ERROR") {
+            setEvents((prev) => [
+              ...prev,
+              {
+                type: "ERROR",
+                timestamp: Date.now(),
+                errorMessage: eventData.errorMessage,
+                errorCode: eventData.errorCode,
+                nodeId: eventData.nodeId,
+              },
+            ]);
+            setStatus("error");
+            break;
+          } else if (eventType === "DONE") {
+            setEvents((prev) => [
+              ...prev,
+              {
+                type: "DONE",
+                timestamp: Date.now(),
+              },
+            ]);
+            setStatus("completed");
+            break;
           }
-
-          return newBuffers;
-        });
-      });
-
-      // JSON events
-      eventSource.addEventListener("JSON", (e) => {
-        const data = JSON.parse(e.data);
-        setEvents((prev) => [
-          ...prev,
-          {
-            type: "JSON",
-            timestamp: Date.now(),
-            eventName: data.eventName,
-            content: data.content,
-            nodeId: data.nodeId,
-          },
-        ]);
-      });
-
-      // ERROR events
-      eventSource.addEventListener("ERROR", (e) => {
-        const data = JSON.parse(e.data);
-        setEvents((prev) => [
-          ...prev,
-          {
-            type: "ERROR",
-            timestamp: Date.now(),
-            errorMessage: data.errorMessage,
-            errorCode: data.errorCode,
-            nodeId: data.nodeId,
-          },
-        ]);
-        setStatus("error");
-        eventSource.close();
-      });
-
-      // DONE event
-      eventSource.addEventListener("DONE", () => {
-        setEvents((prev) => [
-          ...prev,
-          {
-            type: "DONE",
-            timestamp: Date.now(),
-          },
-        ]);
-        setStatus("completed");
-        eventSource.close();
-      });
-
-      // Connection error
-      eventSource.onerror = (error) => {
-        console.error("EventSource error:", error);
-        setStatus("error");
-        setEvents((prev) => [
-          ...prev,
-          {
-            type: "ERROR",
-            timestamp: Date.now(),
-            errorMessage: "Connection to server failed",
-            errorCode: 500,
-          },
-        ]);
-        eventSource.close();
-      };
+        }
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          // Cancelled by user
+          console.log("Execution cancelled");
+          setStatus("idle");
+        } else {
+          console.error("Execution error:", error);
+          setStatus("error");
+          setEvents((prev) => [
+            ...prev,
+            {
+              type: "ERROR",
+              timestamp: Date.now(),
+              errorMessage: error.message || "Connection to server failed",
+              errorCode: 500,
+            },
+          ]);
+        }
+      } finally {
+        abortControllerRef.current = null;
+      }
     },
-    [workflowId, clear]
+    [workflowId]
   );
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, []);
@@ -180,6 +217,9 @@ export function useWorkflowExecution(
     events,
     status,
     streamBuffers,
+    executingNodeId,
+    completedNodes,
+    currentExecutionId,
     execute,
     cancel,
     clear,

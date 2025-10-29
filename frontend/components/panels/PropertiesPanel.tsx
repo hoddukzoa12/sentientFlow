@@ -235,15 +235,33 @@ function AgentNodeProperties({
         />
       </div>
 
-      {/* Instructions */}
+      {/* System Prompt */}
       <div>
         <label className="block text-xs font-medium text-gray-300 mb-1.5">
-          Instructions
+          System Prompt
         </label>
         <textarea
-          value={data.instructions}
-          onChange={(e) => updateNode(nodeId, { instructions: e.target.value })}
+          value={data.systemPrompt}
+          onChange={(e) => updateNode(nodeId, { systemPrompt: e.target.value })}
           rows={3}
+          placeholder="You are a helpful assistant."
+          className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+        />
+      </div>
+
+      {/* User Prompt */}
+      <div>
+        <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          User Prompt
+          <span className="ml-1 text-gray-500 font-normal">
+            (Optional - auto-uses input_as_text if empty)
+          </span>
+        </label>
+        <textarea
+          value={data.userPrompt}
+          onChange={(e) => updateNode(nodeId, { userPrompt: e.target.value })}
+          rows={3}
+          placeholder="Leave empty to auto-use Start node input, or use ${variable_name} for custom templates"
           className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
       </div>
@@ -273,9 +291,29 @@ function AgentNodeProperties({
           onChange={(e) => updateNode(nodeId, { model: e.target.value })}
           className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="gpt-4.1">gpt-4.1</option>
-          <option value="gpt-5">gpt-5</option>
-          <option value="gpt-5-nano">gpt-5-nano</option>
+          <option value="gpt-5">GPT-5</option>
+          <option value="gpt-5-mini">GPT-5 Mini</option>
+          <option value="gpt-5-nano">GPT-5 Nano</option>
+        </select>
+      </div>
+
+      {/* Reasoning Effort - GPT-5 */}
+      <div>
+        <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          Reasoning Effort
+          <span className="ml-1 text-gray-500 font-normal text-[10px]">
+            (Reasoning depth control)
+          </span>
+        </label>
+        <select
+          value={data.reasoningEffort ?? "medium"}
+          onChange={(e) => updateNode(nodeId, { reasoningEffort: e.target.value as AgentNodeData["reasoningEffort"] })}
+          className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="minimal">Minimal - Minimal reasoning</option>
+          <option value="low">Low - Low reasoning</option>
+          <option value="medium">Medium - Medium reasoning</option>
+          <option value="high">High - High reasoning</option>
         </select>
       </div>
 

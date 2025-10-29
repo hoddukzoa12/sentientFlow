@@ -46,6 +46,8 @@ export interface TextChunkEvent extends BaseEvent {
   streamId: string;
   content: string;
   isComplete: boolean;
+  nodeId?: string;
+  eventName?: string;
 }
 
 export interface JsonEvent extends BaseEvent {

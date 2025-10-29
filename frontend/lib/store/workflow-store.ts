@@ -10,6 +10,10 @@ interface WorkflowState {
   edges: WorkflowEdge[];
   selectedNodeId: string | null;
 
+  // Execution state (for visual feedback)
+  executingNodeId: string | null;
+  completedNodes: Set<string>;
+
   // Actions
   setWorkflow: (workflow: Workflow) => void;
   setWorkflowName: (name: string) => void;
@@ -22,6 +26,9 @@ interface WorkflowState {
   addEdge: (edge: WorkflowEdge) => void;
   deleteEdge: (id: string) => void;
   selectNode: (id: string | null) => void;
+  setExecutingNodeId: (id: string | null) => void;
+  setCompletedNodes: (nodes: Set<string>) => void;
+  clearExecutionState: () => void;
 }
 
 export const useWorkflowStore = create<WorkflowState>((set) => ({
@@ -31,6 +38,8 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   nodes: [],
   edges: [],
   selectedNodeId: null,
+  executingNodeId: null,
+  completedNodes: new Set(),
 
   setWorkflow: (workflow) =>
     set({
@@ -81,4 +90,14 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     })),
 
   selectNode: (id) => set({ selectedNodeId: id }),
+
+  setExecutingNodeId: (id) => set({ executingNodeId: id }),
+
+  setCompletedNodes: (nodes) => set({ completedNodes: nodes }),
+
+  clearExecutionState: () =>
+    set({
+      executingNodeId: null,
+      completedNodes: new Set(),
+    }),
 }));

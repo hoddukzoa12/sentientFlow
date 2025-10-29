@@ -41,7 +41,7 @@ export function MessageItem({ message, onApprovalResponse }: MessageItemProps) {
     );
   }
 
-  // Agent message - left aligned
+  // Agent message - left aligned with node header
   if (message.role === "agent") {
     return (
       <div className="flex gap-2 mb-4">
@@ -51,6 +51,13 @@ export function MessageItem({ message, onApprovalResponse }: MessageItemProps) {
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-start max-w-[220px]">
+          {/* Node name header */}
+          {message.nodeName && (
+            <div className="text-xs text-gray-400 mb-1 font-medium">
+              {message.nodeName} Block
+            </div>
+          )}
+          {/* Agent output */}
           <div className="bg-gray-800 text-gray-100 rounded-2xl rounded-tl-sm px-3 py-2">
             <p className="text-sm whitespace-pre-wrap break-words">
               {message.content}
@@ -62,7 +69,37 @@ export function MessageItem({ message, onApprovalResponse }: MessageItemProps) {
     );
   }
 
-  // System message (UserApproval) - centered
+  // System message - centered
+  // Handle different system message types
+  const isNodeExecution =
+    message.messageType === "node_start" || message.messageType === "node_complete";
+  const isWorkflowStatus =
+    message.messageType === "workflow_start" ||
+    message.messageType === "workflow_complete";
+
+  // Node execution messages (node_start, node_complete) - subtle centered
+  if (isNodeExecution) {
+    return (
+      <div className="flex justify-center mb-2">
+        <div className="bg-gray-900/50 border border-gray-700 rounded-lg px-3 py-1.5">
+          <p className="text-xs text-gray-400">{message.content}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Workflow status messages (workflow_start, workflow_complete) - prominent centered
+  if (isWorkflowStatus) {
+    return (
+      <div className="flex justify-center mb-3">
+        <div className="bg-gray-800/70 border border-gray-600 rounded-lg px-4 py-2">
+          <p className="text-xs text-gray-300 font-medium">{message.content}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // User Approval or other system messages - centered
   return (
     <div className="flex flex-col items-center mb-4 gap-2">
       <div className="bg-orange-900/30 border border-orange-700/50 text-orange-200 rounded-lg px-3 py-2 max-w-[240px]">
