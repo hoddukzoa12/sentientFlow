@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Square } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { EndNodeData } from "@/types/workflow";
 
-export function EndNode({ selected }: NodeProps<EndNodeData>) {
+import type { CustomNodeProps, EndNodeData } from "@/types/workflow";
+
+export function EndNode({ selected }: CustomNodeProps<EndNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

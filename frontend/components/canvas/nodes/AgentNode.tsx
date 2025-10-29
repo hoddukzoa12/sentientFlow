@@ -2,10 +2,9 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Bot } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { AgentNodeData } from "@/types/workflow";
+import type { CustomNodeProps, AgentNodeData } from "@/types/workflow";
 
-export function AgentNode({ data, selected }: NodeProps<AgentNodeData>) {
+export function AgentNode({ data, selected }: CustomNodeProps<AgentNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

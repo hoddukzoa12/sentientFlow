@@ -80,6 +80,9 @@ export type WorkflowEvent =
 export interface WorkflowExecutionRequest {
   workflowId: string;
   workflowDefinition: {
+    id: string;
+    name: string;
+    version: string;
     nodes: any[]; // Will use WorkflowNode[] once imported
     edges: any[]; // Will use WorkflowEdge[] once imported
     variables?: any[];

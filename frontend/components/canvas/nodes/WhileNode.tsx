@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Repeat } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { WhileNodeData } from "@/types/workflow";
 
-export function WhileNode({ data, selected }: NodeProps<WhileNodeData>) {
+import type { CustomNodeProps, WhileNodeData } from "@/types/workflow";
+
+export function WhileNode({ data, selected }: CustomNodeProps<WhileNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

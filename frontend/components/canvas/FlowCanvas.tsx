@@ -37,18 +37,18 @@ import {
 } from "./nodes";
 
 const nodeTypes: NodeTypes = {
-  start: StartNode,
-  agent: AgentNode,
-  end: EndNode,
-  note: NoteNode,
-  fileSearch: FileSearchNode,
-  guardrails: GuardrailsNode,
-  mcp: MCPNode,
-  ifElse: IfElseNode,
-  while: WhileNode,
-  userApproval: UserApprovalNode,
-  transform: TransformNode,
-  setState: SetStateNode,
+  start: StartNode as any,
+  agent: AgentNode as any,
+  end: EndNode as any,
+  note: NoteNode as any,
+  fileSearch: FileSearchNode as any,
+  guardrails: GuardrailsNode as any,
+  mcp: MCPNode as any,
+  ifElse: IfElseNode as any,
+  while: WhileNode as any,
+  userApproval: UserApprovalNode as any,
+  transform: TransformNode as any,
+  setState: SetStateNode as any,
 };
 
 interface FlowCanvasProps {

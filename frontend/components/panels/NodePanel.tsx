@@ -3,7 +3,7 @@
 import { Bot, Square, FileText, FileSearch, Shield, Puzzle, GitBranch, Clock, Users, Shuffle, Database } from "lucide-react";
 import { useReactFlow } from "@xyflow/react";
 import { useWorkflowStore } from "@/lib/store/workflow-store";
-import { findNonOverlappingPosition } from "@/lib/utils/node-collision";
+import { findNonOverlappingPosition, NODE_DIMENSIONS } from "@/lib/utils/node-collision";
 import { getDefaultNodeData } from "@/lib/utils/node-defaults";
 import type { NodeType, WorkflowNode } from "@/types/workflow";
 
@@ -74,11 +74,16 @@ export function NodePanel() {
     // Use collision detection to find non-overlapping position
     const position = findNonOverlappingPosition(flowPosition, nodes, nodeType);
 
+    // Get dimensions for this node type
+    const dimensions = NODE_DIMENSIONS[nodeType];
+
     // Create new node
     const newNode: WorkflowNode = {
       id: `${nodeType}-${Date.now()}`,
       type: nodeType,
       position,
+      width: dimensions.width,
+      height: dimensions.height,
       data: getDefaultNodeData(nodeType),
     };
 

@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { UserCheck } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { UserApprovalNodeData } from "@/types/workflow";
 
-export function UserApprovalNode({ data, selected }: NodeProps<UserApprovalNodeData>) {
+import type { CustomNodeProps, UserApprovalNodeData } from "@/types/workflow";
+
+export function UserApprovalNode({ data, selected }: CustomNodeProps<UserApprovalNodeData>) {
   return (
     <div
       className={`relative px-3 py-2 rounded-lg border-2 ${

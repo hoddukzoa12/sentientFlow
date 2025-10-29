@@ -2,10 +2,9 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Play } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { StartNodeData } from "@/types/workflow";
+import type { CustomNodeProps, StartNodeData } from "@/types/workflow";
 
-export function StartNode({ data, selected }: NodeProps<StartNodeData>) {
+export function StartNode({ data, selected }: CustomNodeProps<StartNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Plug } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { MCPNodeData } from "@/types/workflow";
 
-export function MCPNode({ data, selected }: NodeProps<MCPNodeData>) {
+import type { CustomNodeProps, MCPNodeData } from "@/types/workflow";
+
+export function MCPNode({ data, selected }: CustomNodeProps<MCPNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

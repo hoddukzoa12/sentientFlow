@@ -9,7 +9,7 @@ import { PropertiesPanel } from "@/components/panels/PropertiesPanel";
 import { ExecutionPanel } from "@/components/execution/ExecutionPanel";
 import { useWorkflowStore } from "@/lib/store/workflow-store";
 import type { NodeType, WorkflowNode } from "@/types/workflow";
-import { findNonOverlappingPosition } from "@/lib/utils/node-collision";
+import { findNonOverlappingPosition, NODE_DIMENSIONS } from "@/lib/utils/node-collision";
 import { getDefaultNodeData } from "@/lib/utils/node-defaults";
 
 export default function WorkflowEditorPage() {
@@ -20,11 +20,14 @@ export default function WorkflowEditorPage() {
     if (nodes.length === 0) {
       const desiredPosition = { x: 100, y: 250 };
       const position = findNonOverlappingPosition(desiredPosition, nodes, "start");
+      const dimensions = NODE_DIMENSIONS["start"];
 
       const startNode: WorkflowNode = {
         id: "start-initial",
         type: "start",
         position,
+        width: dimensions.width,
+        height: dimensions.height,
         data: getDefaultNodeData("start"),
         deletable: false, // Prevent deletion of Start node
       };
@@ -38,6 +41,9 @@ export default function WorkflowEditorPage() {
       // Find a non-overlapping position
       const finalPosition = findNonOverlappingPosition(position, nodes, type);
 
+      // Get dimensions for this node type
+      const dimensions = NODE_DIMENSIONS[type];
+
       // Generate node ID
       const id = `${type}-${Date.now()}`;
 
@@ -46,6 +52,8 @@ export default function WorkflowEditorPage() {
         id,
         type,
         position: finalPosition,
+        width: dimensions.width,
+        height: dimensions.height,
         data: getDefaultNodeData(type),
       };
 

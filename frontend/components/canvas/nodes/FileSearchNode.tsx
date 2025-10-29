@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Search } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { FileSearchNodeData } from "@/types/workflow";
 
-export function FileSearchNode({ data, selected }: NodeProps<FileSearchNodeData>) {
+import type { CustomNodeProps, FileSearchNodeData } from "@/types/workflow";
+
+export function FileSearchNode({ data, selected }: CustomNodeProps<FileSearchNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

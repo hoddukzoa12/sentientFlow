@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Database } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { SetStateNodeData } from "@/types/workflow";
 
-export function SetStateNode({ data, selected }: NodeProps<SetStateNodeData>) {
+import type { CustomNodeProps, SetStateNodeData } from "@/types/workflow";
+
+export function SetStateNode({ data, selected }: CustomNodeProps<SetStateNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${

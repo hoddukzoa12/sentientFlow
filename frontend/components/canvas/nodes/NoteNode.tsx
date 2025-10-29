@@ -1,9 +1,9 @@
 "use client";
 
-import type { NodeProps } from "@xyflow/react";
-import type { NoteNodeData } from "@/types/workflow";
 
-export function NoteNode({ data, selected }: NodeProps<NoteNodeData>) {
+import type { CustomNodeProps, NoteNodeData } from "@/types/workflow";
+
+export function NoteNode({ data, selected }: CustomNodeProps<NoteNodeData>) {
   return (
     <div
       className={`px-3 py-2 rounded-lg border-2 ${

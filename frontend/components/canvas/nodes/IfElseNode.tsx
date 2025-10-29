@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { GitBranch } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { IfElseNodeData } from "@/types/workflow";
 
-export function IfElseNode({ data, selected }: NodeProps<IfElseNodeData>) {
+import type { CustomNodeProps, IfElseNodeData } from "@/types/workflow";
+
+export function IfElseNode({ data, selected }: CustomNodeProps<IfElseNodeData>) {
   const conditions = data.conditions || [];
 
   return (

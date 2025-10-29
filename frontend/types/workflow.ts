@@ -130,12 +130,21 @@ export type NodeData =
   | MCPNodeData
   | UserApprovalNodeData;
 
+// Custom node props type for node components
+export interface CustomNodeProps<T = NodeData> {
+  data: T;
+  selected?: boolean;
+  id?: string;
+}
+
 // ReactFlow Node type
 export interface WorkflowNode {
   id: string;
   type: NodeType;
   position: { x: number; y: number };
   data: NodeData;
+  width: number; // Node width (required for collision detection)
+  height: number; // Node height (required for collision detection)
   deletable?: boolean; // Whether the node can be deleted (default: true)
   draggable?: boolean; // Whether the node can be dragged (default: true)
 }

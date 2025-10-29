@@ -2,10 +2,10 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { Shield } from "lucide-react";
-import type { NodeProps } from "@xyflow/react";
-import type { GuardrailsNodeData } from "@/types/workflow";
 
-export function GuardrailsNode({ data, selected }: NodeProps<GuardrailsNodeData>) {
+import type { CustomNodeProps, GuardrailsNodeData } from "@/types/workflow";
+
+export function GuardrailsNode({ data, selected }: CustomNodeProps<GuardrailsNodeData>) {
   return (
     <div
       className={`px-3 py-1.5 rounded-lg border-2 ${
