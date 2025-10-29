@@ -16,9 +16,10 @@ logger = logging.getLogger(__name__)
 class WorkflowAgent(AbstractAgent):
     """Agent that executes visual workflows."""
 
-    def __init__(self, workflow: WorkflowDefinition):
+    def __init__(self, workflow: WorkflowDefinition, input_variables: Dict[str, Any] = None):
         self.workflow = workflow
         self.compiler = WorkflowCompiler(workflow)
+        self.input_variables = input_variables or {}
 
     async def assist(
         self,
@@ -29,7 +30,9 @@ class WorkflowAgent(AbstractAgent):
         """Execute the workflow."""
         # Create execution context
         context = ExecutionContext(
-            workflow_id=self.workflow.id, session_id=session.id
+            workflow_id=self.workflow.id,
+            session_id=str(session.activity_id),
+            initial_variables=self.input_variables
         )
 
         try:
@@ -55,10 +58,7 @@ class WorkflowAgent(AbstractAgent):
                 start_node.id, context, response_handler
             )
 
-            # 4. Emit done event
-            await response_handler.emit_text_block(
-                event_name="DONE", content="Workflow execution finished"
-            )
+            # Note: DONE event is emitted by workflows.py via handler.complete()
 
         except Exception as e:
             logger.error(f"Workflow execution error: {str(e)}", exc_info=True)

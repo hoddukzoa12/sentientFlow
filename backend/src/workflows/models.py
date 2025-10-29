@@ -56,13 +56,15 @@ class StartNodeData(BaseNodeData):
 
 
 class AgentNodeData(BaseNodeData):
-    """Agent node configuration."""
+    """Agent node configuration (GPT-5 only)."""
 
     systemPrompt: str = ""
     userPrompt: str = ""
-    model: str = "gpt-4o"
-    temperature: float = 0.7
-    maxTokens: int = 2000
+    model: str = "gpt-5"
+
+    # GPT-5 parameters
+    reasoningEffort: Optional[Literal["minimal", "low", "medium", "high"]] = "medium"
+
     outputVariable: str = "agent_response"
 
 

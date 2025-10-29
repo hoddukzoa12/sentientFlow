@@ -13,7 +13,7 @@ pydantic-settings==2.7.1
 openai==1.59.7
 
 # CEL Expression Engine
-celpy==1.3.0
+cel-python==0.4.0
 
 # Utilities
 python-dotenv==1.0.1

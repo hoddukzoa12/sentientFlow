@@ -79,6 +79,7 @@ class StartNodeExecutor(BaseNodeExecutor):
             await response_handler.emit_text_block(
                 event_name="WORKFLOW_START",
                 content=f"Workflow started with {len(variables)} variables",
+                node_id=node_id,
             )
 
             duration = time.time() - start_time
@@ -112,19 +113,27 @@ class AgentNodeExecutor(BaseNodeExecutor):
             system_prompt = self._render_template(
                 node_data.get("systemPrompt", ""), context.get_all_variables()
             )
-            user_prompt = self._render_template(
-                node_data.get("userPrompt", ""), context.get_all_variables()
-            )
+            user_prompt_template = node_data.get("userPrompt", "")
+            user_prompt = self._render_template(user_prompt_template, context.get_all_variables())
 
-            # 2. Get model parameters
-            model = node_data.get("model", "gpt-4o")
-            temperature = node_data.get("temperature", 0.7)
-            max_tokens = node_data.get("maxTokens", 2000)
+            # Smart fallback: if user_prompt is empty, try common variable names
+            if not user_prompt or not user_prompt.strip():
+                variables = context.get_all_variables()
+                # Try common input variable names in priority order
+                for var_name in ['input_as_text', 'user_input', 'query', 'message', 'prompt']:
+                    if var_name in variables and variables[var_name]:
+                        user_prompt = str(variables[var_name])
+                        break
+
+            # 2. Get model (GPT-5 only)
+            model = node_data.get("model", "gpt-5")
+            reasoning_effort = node_data.get("reasoningEffort", "medium")
 
             # 3. Emit node start event
             await response_handler.emit_text_block(
                 event_name="NODE_START",
                 content=f"Agent node '{node_data.get('name', node_id)}' starting",
+                node_id=node_id,
             )
 
             # 4. Create streaming request
@@ -134,39 +143,53 @@ class AgentNodeExecutor(BaseNodeExecutor):
             if user_prompt:
                 messages.append({"role": "user", "content": user_prompt})
 
-            stream = await self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=True,
-            )
+            # 5. Build API parameters for GPT-5
+            api_params = {
+                "model": model,
+                "messages": messages,
+                "stream": True,
+            }
 
-            # 5. Stream response
-            stream_id = response_handler.create_text_stream(event_name="AGENT_RESPONSE")
+            # Add GPT-5 reasoning effort parameter
+            if reasoning_effort:
+                api_params["reasoning_effort"] = reasoning_effort
+
+            openai_stream = await self.client.chat.completions.create(**api_params)
+
+            # 6. Stream response with separate thinking and response streams
+            thinking_stream = response_handler.create_text_stream("AGENT_THINKING", node_id=node_id)
+            response_stream = response_handler.create_text_stream("AGENT_RESPONSE", node_id=node_id)
+
+            full_thinking = ""
             full_response = ""
 
-            async for chunk in stream:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
-                    await response_handler.emit_text_chunk(
-                        stream_id=stream_id, content=content, is_complete=False
-                    )
+            async for chunk in openai_stream:
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
 
-            # 6. Complete stream
-            await response_handler.emit_text_chunk(
-                stream_id=stream_id, content="", is_complete=True
-            )
+                    # Capture thinking/reasoning content (GPT-5 specific)
+                    if hasattr(delta, 'reasoning_content') and delta.reasoning_content:
+                        full_thinking += delta.reasoning_content
+                        await thinking_stream.emit_chunk(delta.reasoning_content)
 
-            # 7. Save result to context
+                    # Capture regular response content
+                    if delta.content:
+                        full_response += delta.content
+                        await response_stream.emit_chunk(delta.content)
+
+            # 7. Complete both streams
+            await thinking_stream.complete()
+            await response_stream.complete()
+
+            # 8. Save result to context
             output_var = node_data.get("outputVariable", "agent_response")
             context.set_variable(output_var, full_response)
 
-            # 8. Emit completion
+            # 9. Emit completion
             await response_handler.emit_text_block(
                 event_name="NODE_COMPLETE",
                 content=f"Agent node '{node_data.get('name', node_id)}' completed",
+                node_id=node_id,
             )
 
             duration = time.time() - start_time
@@ -197,11 +220,12 @@ class EndNodeExecutor(BaseNodeExecutor):
             await response_handler.emit_text_block(
                 event_name="WORKFLOW_COMPLETE",
                 content="Workflow execution completed successfully",
+                node_id=node_id,
             )
 
             # Emit final context as JSON
             await response_handler.emit_json(
-                event_name="FINAL_CONTEXT", content=context.to_dict()
+                event_name="FINAL_CONTEXT", data=context.to_dict()
             )
 
             duration = time.time() - start_time

@@ -32,12 +32,19 @@ class ExecutionContext:
 
     workflow_id: str
     session_id: str
+    initial_variables: Optional[Dict[str, Any]] = None
     _variables: Dict[str, Any] = field(default_factory=dict)
     _scoped_variables: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     _execution_history: List[NodeExecution] = field(default_factory=list)
     _node_states: Dict[str, Any] = field(default_factory=dict)
     started_at: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Initialize variables from initial_variables."""
+        if self.initial_variables:
+            for key, value in self.initial_variables.items():
+                self._variables[key] = value
 
     def set_variable(self, name: str, value: Any, scope: str = "global") -> None:
         """Set a variable in the specified scope."""
