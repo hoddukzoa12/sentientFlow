@@ -101,7 +101,9 @@ SentientFlow is a visual workflow builder for creating AI agent workflows powere
 
 - **Streaming**: SSE (Server-Sent Events)
 - **Format**: `event: {event_name}\ndata: {JSON}\n\n`
-- **Event System**: Sentient Framework Events (TextBlock, TextChunk, Document, Error, Done)
+- **Event System**: Sentient Framework Events
+  - **Framework Types**: TextBlockEvent, TextChunkEvent, DocumentEvent, ErrorEvent, DoneEvent
+  - **Custom Names**: WORKFLOW_START, AGENT_THINKING, NODE_COMPLETE, etc.
 
 ---
 
@@ -448,7 +450,7 @@ class NodeAwareResponseHandler(DefaultResponseHandler):
         return super().create_text_stream(encoded_name)
 ```
 
-**NodeId Encoding Pattern**: `"event_name::node_id"` allows attaching node context to Framework events without modifying Event schema.
+**NodeId Encoding**: Uses the `"event_name::node_id"` pattern to attach node context to Framework events without modifying the Event schema. See [NodeId Encoding](#nodeid-encoding) section for details.
 
 ### Node Executor Pattern
 
@@ -656,6 +658,14 @@ data: {"id":"01JBVW...","event_name":"DONE","content_type":"atomic.done","timest
 ```
 
 **Event Types by content_type**:
+
+| content_type | Framework Event | Primary Usage |
+|-------------|----------------|---------------|
+| atomic.textblock | TextBlockEvent | Workflow milestones (WORKFLOW_START, NODE_COMPLETE) |
+| chunked.text | TextChunkEvent | Streaming LLM output (AGENT_THINKING, AGENT_RESPONSE) |
+| atomic.json | DocumentEvent | Structured data (FINAL_CONTEXT) |
+| atomic.error | ErrorEvent | Error messages and codes |
+| atomic.done | DoneEvent | Workflow completion signal |
 
 #### 1. atomic.textblock
 ```typescript
@@ -989,6 +999,15 @@ export interface WorkflowNode extends Node {
   type: NodeType;
   position: XYPosition;
   data: NodeData;
+}
+```
+
+#### Variable Type
+```typescript
+export interface Variable {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  defaultValue?: any;
 }
 ```
 
