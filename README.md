@@ -159,7 +159,7 @@ python main.py  # Runs at http://localhost:8000
 - **Framework**: FastAPI 0.115
 - **Agent Engine**: Sentient Agent Framework 0.3
 - **LLM**: OpenAI API 1.59
-- **Expression Engine**: CEL (celpy 1.3)
+- **Expression Engine**: CEL (cel-python 0.4.0)
 - **Validation**: Pydantic 2.10
 - **Server**: Uvicorn 0.34
 

@@ -159,7 +159,7 @@ python main.py  # http://localhost:8000에서 실행
 - **프레임워크**: FastAPI 0.115
 - **에이전트 엔진**: Sentient Agent Framework 0.3
 - **LLM**: OpenAI API 1.59
-- **표현식 엔진**: CEL (celpy 1.3)
+- **표현식 엔진**: CEL (cel-python 0.4.0)
 - **검증**: Pydantic 2.10
 - **서버**: Uvicorn 0.34
 

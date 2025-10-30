@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **SentientFlow** is a visual workflow builder for the Sentient Agent Framework. Users create AI agent workflows through a drag-and-drop canvas interface built with ReactFlow. The application allows defining workflow logic, transformations, conditionals, and agent behaviors visually, with the goal of compiling these visual workflows into executable agents.
 
-**Tech Stack**: Next.js 15 (App Router), React 19, TypeScript (strict mode), Tailwind CSS v4, @xyflow/react v12.9.1, Zustand v5.0.8
+**Tech Stack**: Next.js 16 (App Router), React 19, TypeScript (strict mode), Tailwind CSS v4, @xyflow/react v12.9.1, Zustand v5.0.8
 
 ## Development Commands
 
