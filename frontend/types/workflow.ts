@@ -26,6 +26,7 @@ export interface Variable {
   name: string;
   type: VariableType;
   defaultValue?: any;
+  description?: string; // Description shown in Variable Picker
 }
 
 // Node Data Types
@@ -43,9 +44,14 @@ export interface AgentNodeData {
   // GPT-5 parameters
   reasoningEffort?: "minimal" | "low" | "medium" | "high";
 
+  // Connection settings
+  provider?: "openai" | "anthropic" | "gemini" | "grok"; // LLM provider (default: "openai")
+  connectionId?: string; // Optional: specific connection ID (defaults to active connection)
+
   includeHistory: boolean;
   tools?: string[];
   outputFormat: "text" | "json";
+  outputVariable?: string; // Variable name for agent output (default: "agent_response")
 }
 
 export interface EndNodeData {

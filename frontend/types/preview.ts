@@ -69,6 +69,9 @@ export interface NodeExecutionBlock {
   responseChunks: string[];      // Completed response chunks
   streamingResponse: string;     // Currently streaming response
 
+  // Timing control
+  thinkingComplete?: boolean;    // True when thinking is done, allows response to show
+
   // Error handling
   error?: string;
 }

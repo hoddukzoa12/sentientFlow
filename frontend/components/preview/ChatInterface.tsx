@@ -95,11 +95,30 @@ export function ChatInterface({
             );
           } else {
             const block = item.data;
+
+            // Only render block if it has content
+            const hasContent =
+              block.thinkingChunks.length > 0 ||
+              block.streamingThinking ||
+              block.responseChunks.length > 0 ||
+              block.streamingResponse ||
+              block.error;
+
+            if (!hasContent) {
+              return null;
+            }
+
+            const timestamp = new Date(block.startedAt).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            });
             return (
               <NodeBlockContainer
                 key={block.id}
                 block={block}
                 isExecuting={block.nodeId === executingNodeId && block.status === "executing"}
+                timestamp={timestamp}
               />
             );
           }

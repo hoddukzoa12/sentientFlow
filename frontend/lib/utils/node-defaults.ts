@@ -22,6 +22,7 @@ export function getDefaultNodeData(type: NodeType): any {
         userPrompt: "",  // Auto-uses input_as_text if empty
         model: "gpt-5",
         reasoningEffort: "medium",  // GPT-5 default
+        provider: "openai",  // Default provider
         includeHistory: true,
         tools: [],
         outputFormat: "text",

@@ -10,6 +10,7 @@ import {
   Edge,
   Node,
   NodeChange,
+  EdgeChange,
   useNodesState,
   useEdgesState,
   BackgroundVariant,
@@ -57,12 +58,12 @@ interface FlowCanvasProps {
 }
 
 export function FlowCanvas({ onNodeDrop, isInteractive = true }: FlowCanvasProps) {
-  const { nodes, edges, setNodes, setEdges, addEdge: addWorkflowEdge, selectNode, deleteNode } = useWorkflowStore();
+  const { nodes, edges, setNodes, setEdges, addEdge: addWorkflowEdge, selectNode, deleteNode, deleteEdge } = useWorkflowStore();
   const reactFlowInstance = useReactFlow();
 
   // ReactFlow requires specific types
   const [reactFlowNodes, setReactFlowNodes, onNodesChangeReactFlow] = useNodesState(nodes as Node[]);
-  const [reactFlowEdges, setReactFlowEdges, onEdgesChange] = useEdgesState(edges as Edge[]);
+  const [reactFlowEdges, setReactFlowEdges, onEdgesChangeReactFlow] = useEdgesState(edges as Edge[]);
 
   // Sync Zustand state with ReactFlow state
   // Sync on any node data changes (content, properties, etc.)
@@ -234,6 +235,23 @@ export function FlowCanvas({ onNodeDrop, isInteractive = true }: FlowCanvasProps
     [onNodesChangeReactFlow, deleteNode, reactFlowNodes, setNodes]
   );
 
+  // Custom handler to sync edge deletions with Zustand store
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      // Update ReactFlow's internal state
+      onEdgesChangeReactFlow(changes);
+
+      // Process changes
+      changes.forEach((change) => {
+        // Sync deletions to Zustand store
+        if (change.type === 'remove') {
+          deleteEdge(change.id);
+        }
+      });
+    },
+    [onEdgesChangeReactFlow, deleteEdge]
+  );
+
   return (
     <div
       className="w-full h-full bg-black"
@@ -257,6 +275,9 @@ export function FlowCanvas({ onNodeDrop, isInteractive = true }: FlowCanvasProps
         nodesFocusable={isInteractive}
         defaultViewport={{ x: 250, y: 150, zoom: 1 }}
         className="bg-black"
+        panOnDrag={isInteractive}
+        zoomOnScroll={isInteractive}
+        zoomOnDoubleClick={isInteractive}
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} color="#333" />
         <Controls className="bg-gray-800 border border-gray-700" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useWorkflowStore } from "@/lib/store/workflow-store";
+import { useConnectionsStore } from "@/lib/store/connections-store";
 import type {
   AgentNodeData,
   StartNodeData,
@@ -13,15 +14,20 @@ import type {
   UserApprovalNodeData,
   TransformNodeData,
   SetStateNodeData,
+  WorkflowNode,
+  WorkflowEdge,
 } from "@/types/workflow";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { KeyValueEditor } from "@/components/ui/KeyValueEditor";
 import { TagInput } from "@/components/ui/TagInput";
 import { ConditionEditor } from "@/components/ui/ConditionEditor";
 import { ExpressionInput } from "@/components/ui/ExpressionInput";
+import { TextareaWithVariables } from "@/components/ui/TextareaWithVariables";
+import { VariableEditor } from "@/components/ui/VariableEditor";
+import { getAvailableVariables } from "@/lib/utils/variable-context";
 
 export function PropertiesPanel() {
-  const { nodes, selectedNodeId, updateNode, deleteNode } = useWorkflowStore();
+  const { nodes, edges, selectedNodeId, updateNode, deleteNode } = useWorkflowStore();
 
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
@@ -81,6 +87,8 @@ export function PropertiesPanel() {
             data={selectedNode.data as AgentNodeData}
             nodeId={selectedNode.id}
             updateNode={updateNode}
+            nodes={nodes}
+            edges={edges}
           />
         )}
 
@@ -202,9 +210,11 @@ function StartNodeProperties({
         <h3 className="text-xs font-medium text-gray-300 mb-1.5">
           State variables
         </h3>
-        <button className="w-full px-2 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-xs text-gray-200">
-          + Add
-        </button>
+        <VariableEditor
+          value={data.stateVariables}
+          onChange={(newValue) => updateNode(nodeId, { stateVariables: newValue })}
+          label="State Variable"
+        />
       </div>
     </div>
   );
@@ -215,10 +225,14 @@ function AgentNodeProperties({
   data,
   nodeId,
   updateNode,
+  nodes,
+  edges,
 }: {
   data: AgentNodeData;
   nodeId: string;
   updateNode: (id: string, data: Partial<AgentNodeData>) => void;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
 }) {
   return (
     <div className="space-y-3">
@@ -236,35 +250,24 @@ function AgentNodeProperties({
       </div>
 
       {/* System Prompt */}
-      <div>
-        <label className="block text-xs font-medium text-gray-300 mb-1.5">
-          System Prompt
-        </label>
-        <textarea
-          value={data.systemPrompt}
-          onChange={(e) => updateNode(nodeId, { systemPrompt: e.target.value })}
-          rows={3}
-          placeholder="You are a helpful assistant."
-          className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-        />
-      </div>
+      <TextareaWithVariables
+        label="System Prompt"
+        value={data.systemPrompt}
+        onChange={(value) => updateNode(nodeId, { systemPrompt: value })}
+        availableVariables={getAvailableVariables(nodeId, nodes, edges)}
+        placeholder="You are a helpful assistant."
+        rows={3}
+      />
 
       {/* User Prompt */}
-      <div>
-        <label className="block text-xs font-medium text-gray-300 mb-1.5">
-          User Prompt
-          <span className="ml-1 text-gray-500 font-normal">
-            (Optional - auto-uses input_as_text if empty)
-          </span>
-        </label>
-        <textarea
-          value={data.userPrompt}
-          onChange={(e) => updateNode(nodeId, { userPrompt: e.target.value })}
-          rows={3}
-          placeholder="Leave empty to auto-use Start node input, or use ${variable_name} for custom templates"
-          className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-        />
-      </div>
+      <TextareaWithVariables
+        label="User Prompt"
+        value={data.userPrompt}
+        onChange={(value) => updateNode(nodeId, { userPrompt: value })}
+        availableVariables={getAvailableVariables(nodeId, nodes, edges)}
+        placeholder="Leave empty to auto-use Start node input, or use variables for custom templates"
+        rows={3}
+      />
 
       {/* Include chat history */}
       <div className="flex items-center justify-between">
@@ -280,6 +283,12 @@ function AgentNodeProperties({
           className="w-8 h-5 rounded-full"
         />
       </div>
+
+      {/* Provider */}
+      <AgentProviderSelector
+        provider={data.provider || "openai"}
+        onChange={(provider) => updateNode(nodeId, { provider })}
+      />
 
       {/* Model */}
       <div>
@@ -819,6 +828,64 @@ function SetStateNodeProperties({
           keyLabel="Variable"
           valueLabel="Value"
         />
+      </div>
+    </div>
+  );
+}
+
+// Agent Provider Selector Component
+function AgentProviderSelector({
+  provider,
+  onChange,
+}: {
+  provider: "openai" | "anthropic" | "gemini" | "grok";
+  onChange: (provider: "openai" | "anthropic" | "gemini" | "grok") => void;
+}) {
+  const { getActiveConnection } = useConnectionsStore();
+  const activeConnection = getActiveConnection(provider);
+
+  return (
+    <div className="space-y-2">
+      {/* Provider Dropdown */}
+      <div>
+        <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          LLM Provider
+        </label>
+        <select
+          value={provider}
+          onChange={(e) => onChange(e.target.value as typeof provider)}
+          className="w-full px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="openai">OpenAI</option>
+          <option value="anthropic" disabled>
+            Anthropic (Not supported yet)
+          </option>
+          <option value="gemini" disabled>
+            Gemini (Not supported yet)
+          </option>
+          <option value="grok" disabled>
+            Grok (Not supported yet)
+          </option>
+        </select>
+      </div>
+
+      {/* Active Connection Display */}
+      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-gray-900/50 border border-gray-800">
+        {activeConnection ? (
+          <>
+            <CheckCircle2 className="w-3 h-3 text-green-400 flex-shrink-0" />
+            <span className="text-[10px] text-gray-400">
+              Using: <span className="text-gray-300">{activeConnection.name}</span>
+            </span>
+          </>
+        ) : (
+          <>
+            <AlertTriangle className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+            <span className="text-[10px] text-gray-400">
+              Using: <span className="text-gray-300">Environment Variable</span>
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

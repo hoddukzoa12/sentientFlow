@@ -104,24 +104,44 @@ export function PreviewPanel({
           continue;
         }
 
-        // Block ID includes executionId to separate different runs
-        const blockId = `${nodeId}-${currentExecId}`;
+        // Unified block for AGENT_THINKING and AGENT_RESPONSE to show in single message
+        const blockId = (eventName === "AGENT_THINKING" || eventName === "AGENT_RESPONSE")
+          ? `workflow-unified-${currentExecId}`
+          : `${nodeId}-${currentExecId}`;
 
         // Create block if it doesn't exist (TEXT_CHUNK may arrive before TEXT_BLOCK)
         if (!blocks.has(blockId)) {
-          const node = nodeMap.get(nodeId);
-          blocks.set(blockId, {
-            id: `block-${blockId}`,
-            nodeId: nodeId,
-            nodeName: getNodeDisplayName(node),
-            nodeType: node?.type || "agent",
-            status: "executing",
-            startedAt: event.timestamp,
-            thinkingChunks: [],
-            streamingThinking: "",
-            responseChunks: [],
-            streamingResponse: "",
-          });
+          if (eventName === "AGENT_THINKING" || eventName === "AGENT_RESPONSE") {
+            // Create unified block for entire workflow (thinking + response)
+            blocks.set(blockId, {
+              id: `block-${blockId}`,
+              nodeId: "workflow",
+              nodeName: "Workflow",
+              nodeType: "unified",
+              status: "executing",
+              startedAt: event.timestamp,
+              thinkingChunks: [],
+              streamingThinking: "",
+              responseChunks: [],
+              streamingResponse: "",
+              thinkingComplete: false,
+            });
+          } else {
+            // Create per-node block for other events
+            const node = nodeMap.get(nodeId);
+            blocks.set(blockId, {
+              id: `block-${blockId}`,
+              nodeId: nodeId,
+              nodeName: getNodeDisplayName(node),
+              nodeType: node?.type || "agent",
+              status: "executing",
+              startedAt: event.timestamp,
+              thinkingChunks: [],
+              streamingThinking: "",
+              responseChunks: [],
+              streamingResponse: "",
+            });
+          }
         }
 
         const block = blocks.get(blockId)!;
@@ -133,18 +153,29 @@ export function PreviewPanel({
               block.thinkingChunks.push(block.streamingThinking);
               block.streamingThinking = "";
             }
+            // Mark thinking as complete - this allows response to be shown
+            block.thinkingComplete = true;
           } else {
             // Append to streaming thinking
             block.streamingThinking += content;
           }
         } else if (eventName === "AGENT_RESPONSE") {
           if (isComplete) {
-            // Move streaming to completed chunks
+            // Replace with latest response only (not accumulate)
+            // This ensures only the final agent's response is shown in multi-agent workflows
             if (block.streamingResponse) {
-              block.responseChunks.push(block.streamingResponse);
+              block.responseChunks = [block.streamingResponse];
               block.streamingResponse = "";
             }
+            // Mark entire block as completed
+            block.status = "completed";
+            block.completedAt = event.timestamp;
           } else {
+            // Clear previous responses when new response stream starts
+            // Detected by empty streamingResponse (first chunk of new stream)
+            if (!block.streamingResponse) {
+              block.responseChunks = [];
+            }
             // Append to streaming response
             block.streamingResponse += content;
           }
@@ -202,7 +233,7 @@ export function PreviewPanel({
       },
     ]);
 
-    // Find start node and extract variables
+    // Find start node and extract all variables
     const startNode = nodes.find((node) => node.type === "start");
     const startData = startNode?.data as StartNodeData | undefined;
     const variables = [

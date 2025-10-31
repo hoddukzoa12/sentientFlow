@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+    # Database
+    database_url: str = ""
+
+    # Security
+    encryption_key: str = ""
+
     # LLM API Keys
     openai_api_key: str = ""
 

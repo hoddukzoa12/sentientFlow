@@ -14,8 +14,12 @@ import {
   Copy,
   Edit,
   Trash2,
+  Settings,
 } from "lucide-react";
 import { useWorkflowStore } from "@/lib/store/workflow-store";
+import { useWorkflowsDbStore } from "@/lib/store/workflows-db-store";
+import { SaveWorkflowDialog } from "./SaveWorkflowDialog";
+import { DeleteWorkflowDialog } from "./DeleteWorkflowDialog";
 
 interface WorkflowHeaderProps {
   onPreviewToggle?: () => void;
@@ -25,10 +29,13 @@ export function WorkflowHeader({ onPreviewToggle }: WorkflowHeaderProps) {
   const router = useRouter();
   const { workflowName, workflowVersion, setWorkflowName, setWorkflowVersion } =
     useWorkflowStore();
+  const { currentWorkflowId, duplicateWorkflow } = useWorkflowsDbStore();
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(workflowName);
   const [showMenu, setShowMenu] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -61,21 +68,42 @@ export function WorkflowHeader({ onPreviewToggle }: WorkflowHeaderProps) {
     setIsEditingName(true);
   };
 
-  const handleDuplicate = () => {
+  const handleDuplicate = async () => {
     setShowMenu(false);
-    // TODO: Implement duplicate workflow
-    console.log("Duplicate workflow");
+
+    if (!currentWorkflowId) {
+      alert("Please save the workflow first before duplicating");
+      return;
+    }
+
+    try {
+      const newWorkflowId = await duplicateWorkflow(currentWorkflowId);
+      // Navigate to the duplicated workflow
+      router.push(`/workflow/${newWorkflowId}`);
+    } catch (error) {
+      console.error("Failed to duplicate workflow:", error);
+      alert("Failed to duplicate workflow");
+    }
   };
 
   const handleDelete = () => {
     setShowMenu(false);
-    // TODO: Implement delete workflow with confirmation
-    console.log("Delete workflow");
+
+    if (!currentWorkflowId) {
+      alert("No workflow to delete");
+      return;
+    }
+
+    setShowDeleteDialog(true);
+  };
+
+  const handleSettings = () => {
+    setShowMenu(false);
+    router.push("/settings");
   };
 
   const handleSave = () => {
-    // TODO: Implement save workflow
-    console.log("Save workflow");
+    setShowSaveDialog(true);
   };
 
   const handleDeploy = () => {
@@ -167,6 +195,15 @@ export function WorkflowHeader({ onPreviewToggle }: WorkflowHeaderProps) {
                   <Edit size={16} />
                   <span>Rename</span>
                 </button>
+                <div className="w-full h-px bg-gray-700" />
+                <button
+                  onClick={handleSettings}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
+                >
+                  <Settings size={16} />
+                  <span>Settings</span>
+                </button>
+                <div className="w-full h-px bg-gray-700" />
                 <button
                   onClick={handleDelete}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-800 transition-colors"
@@ -209,6 +246,17 @@ export function WorkflowHeader({ onPreviewToggle }: WorkflowHeaderProps) {
           <span>Deploy</span>
         </button>
       </div>
+
+      {/* Dialogs */}
+      <SaveWorkflowDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+        mode="save"
+      />
+      <DeleteWorkflowDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+      />
     </header>
   );
 }

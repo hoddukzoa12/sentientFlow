@@ -12,6 +12,12 @@ pydantic-settings==2.7.1
 # LLM Integration
 openai==1.59.7
 
+# Database
+asyncpg==0.30.0
+
+# Security
+cryptography==43.0.3
+
 # CEL Expression Engine
 cel-python==0.4.0
 
