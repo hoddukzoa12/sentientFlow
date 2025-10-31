@@ -9,9 +9,12 @@ SentientFlow is an open-source visual workflow builder that lets you create, con
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)](https://fastapi.tiangolo.com/)
+[![Framework](https://img.shields.io/badge/Sentient_Framework-v0.3.0-blue)](https://github.com/sentient-agi/Sentient-Agent-Framework)
+[![GPT-5](https://img.shields.io/badge/GPT--5-Supported-green)](https://openai.com/)
 
 ## ✨ Features
 
+### Core Capabilities
 - **🎨 Visual Canvas**: Drag-and-drop interface powered by ReactFlow for building workflows
 - **🤖 AI Agent Nodes**: Configure LLM-powered agents with custom prompts and parameters
 - **🔀 Logic Controls**: Conditional branching (If/Else), loops (While), user approvals
@@ -19,6 +22,14 @@ SentientFlow is an open-source visual workflow builder that lets you create, con
 - **🔌 Tool Integration**: File search, guardrails, MCP server integration
 - **⚡ Real-time Streaming**: See LLM responses stream in real-time via SSE
 - **💾 Workflow Persistence**: Save and load workflows with Zustand state management
+
+### Framework & AI Features
+- **🧠 GPT-5 Support**: Full GPT-5 integration with configurable reasoning effort (low/medium/high)
+- **🔍 Thinking Transparency**: See agent reasoning process in collapsible sections
+- **🔗 Multi-Agent Workflows**: Chain multiple agents with automatic variable passing
+- **📡 Event Streaming**: Framework-compliant SSE events with monotonic ULID ordering
+- **✅ Framework Compliance**: 100% compliant with Sentient Agent Framework v0.3.0
+- **🧪 Tested**: Comprehensive test suite (14 tests) verifying Framework integration
 
 ## 🏗️ Architecture
 
@@ -188,32 +199,37 @@ sentientFlow/
 
 ## 🗺️ Roadmap
 
-### ✅ Phase 1: Core Execution Engine (Current)
-- [x] Visual workflow builder
+### ✅ Phase 1: Core Execution Engine (Completed)
+- [x] Visual workflow builder with 12 node types
 - [x] Start → Agent → End execution
-- [x] Real-time SSE streaming
-- [x] OpenAI integration
+- [x] Real-time SSE streaming with Framework compliance
+- [x] GPT-5 integration with reasoning transparency
+- [x] Multi-agent workflow support
+- [x] Sentient Framework v0.3.0 compliance verified
+- [x] Comprehensive test suite (14 Framework compliance tests)
 
-### 🔄 Phase 2: Advanced Nodes (In Progress)
-- [ ] Transform node (CEL expressions)
-- [ ] If/Else node (conditional logic)
-- [ ] While node (loops)
-- [ ] SetState node (variable management)
+### ✅ Phase 2: Advanced Nodes (Completed)
+- [x] Transform node (CEL expressions)
+- [x] If/Else node (conditional logic)
+- [x] While node (loops)
+- [x] SetState node (variable management)
 
-### 📋 Phase 3: Tool Integration
-- [ ] File Search node
-- [ ] MCP server integration
-- [ ] Guardrails node
-- [ ] User Approval node
+### 🔄 Phase 3: Tool Integration (In Progress)
+- [x] File Search node
+- [x] MCP server integration
+- [x] Guardrails node
+- [x] User Approval node
+- [ ] Additional tool integrations
 
-### 🎨 Phase 4: Enhanced UX
+### 📋 Phase 4: Enhanced UX (Planned)
 - [ ] Workflow templates
 - [ ] Export/Import workflows
 - [ ] Execution history
 - [ ] Debug mode with breakpoints
+- [ ] Variable picker with autocomplete
 
-### 🔐 Phase 5: Multi-User & Authentication
-- [ ] Wallet login (Thirdweb)
+### 🔐 Phase 5: Multi-User & Authentication (Planned)
+- [ ] User authentication
 - [ ] User-specific API keys
 - [ ] Project management
 - [ ] Multi-LLM provider support (Anthropic, Gemini, Perplexity)

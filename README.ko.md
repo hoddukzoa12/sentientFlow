@@ -9,9 +9,12 @@ SentientFlow는 직관적인 드래그 앤 드롭 인터페이스를 통해 AI �
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)](https://fastapi.tiangolo.com/)
+[![Framework](https://img.shields.io/badge/Sentient_Framework-v0.3.0-blue)](https://github.com/sentient-agi/Sentient-Agent-Framework)
+[![GPT-5](https://img.shields.io/badge/GPT--5-지원-green)](https://openai.com/)
 
 ## ✨ 주요 기능
 
+### 핵심 기능
 - **🎨 시각적 캔버스**: ReactFlow 기반 드래그 앤 드롭 인터페이스로 워크플로우 구축
 - **🤖 AI 에이전트 노드**: 사용자 정의 프롬프트와 매개변수로 LLM 기반 에이전트 구성
 - **🔀 로직 제어**: 조건 분기(If/Else), 루프(While), 사용자 승인
@@ -19,6 +22,14 @@ SentientFlow는 직관적인 드래그 앤 드롭 인터페이스를 통해 AI �
 - **🔌 도구 통합**: 파일 검색, 가드레일, MCP 서버 통합
 - **⚡ 실시간 스트리밍**: SSE를 통한 LLM 응답 실시간 스트리밍
 - **💾 워크플로우 저장**: Zustand 상태 관리로 워크플로우 저장 및 불러오기
+
+### 프레임워크 & AI 기능
+- **🧠 GPT-5 지원**: 설정 가능한 추론 노력(낮음/중간/높음)과 함께 완전한 GPT-5 통합
+- **🔍 사고 과정 투명성**: 접을 수 있는 섹션에서 에이전트의 추론 과정 확인
+- **🔗 다중 에이전트 워크플로우**: 자동 변수 전달로 여러 에이전트 연결
+- **📡 이벤트 스트리밍**: 단조 증가하는 ULID 순서를 가진 프레임워크 호환 SSE 이벤트
+- **✅ 프레임워크 준수**: Sentient Agent Framework v0.3.0과 100% 호환
+- **🧪 테스트 완료**: 프레임워크 통합을 검증하는 포괄적인 테스트 스위트 (14개 테스트)
 
 ## 🏗️ 아키텍처
 
@@ -188,32 +199,37 @@ sentientFlow/
 
 ## 🗺️ 로드맵
 
-### ✅ Phase 1: 핵심 실행 엔진 (현재)
-- [x] 시각적 워크플로우 빌더
+### ✅ Phase 1: 핵심 실행 엔진 (완료)
+- [x] 12가지 노드 타입을 가진 시각적 워크플로우 빌더
 - [x] Start → Agent → End 실행
-- [x] 실시간 SSE 스트리밍
-- [x] OpenAI 통합
+- [x] 프레임워크 호환 실시간 SSE 스트리밍
+- [x] 추론 투명성을 포함한 GPT-5 통합
+- [x] 다중 에이전트 워크플로우 지원
+- [x] Sentient Framework v0.3.0 준수 검증 완료
+- [x] 포괄적인 테스트 스위트 (14개의 프레임워크 준수 테스트)
 
-### 🔄 Phase 2: 고급 노드 (진행 중)
-- [ ] Transform 노드 (CEL 표현식)
-- [ ] If/Else 노드 (조건부 로직)
-- [ ] While 노드 (루프)
-- [ ] SetState 노드 (변수 관리)
+### ✅ Phase 2: 고급 노드 (완료)
+- [x] Transform 노드 (CEL 표현식)
+- [x] If/Else 노드 (조건부 로직)
+- [x] While 노드 (루프)
+- [x] SetState 노드 (변수 관리)
 
-### 📋 Phase 3: 도구 통합
-- [ ] File Search 노드
-- [ ] MCP 서버 통합
-- [ ] Guardrails 노드
-- [ ] User Approval 노드
+### 🔄 Phase 3: 도구 통합 (진행 중)
+- [x] File Search 노드
+- [x] MCP 서버 통합
+- [x] Guardrails 노드
+- [x] User Approval 노드
+- [ ] 추가 도구 통합
 
-### 🎨 Phase 4: UX 향상
+### 📋 Phase 4: UX 향상 (계획됨)
 - [ ] 워크플로우 템플릿
 - [ ] 워크플로우 내보내기/가져오기
 - [ ] 실행 기록
 - [ ] 중단점이 있는 디버그 모드
+- [ ] 자동완성 기능이 있는 변수 선택기
 
-### 🔐 Phase 5: 다중 사용자 및 인증
-- [ ] 지갑 로그인 (Thirdweb)
+### 🔐 Phase 5: 다중 사용자 및 인증 (계획됨)
+- [ ] 사용자 인증
 - [ ] 사용자별 API 키
 - [ ] 프로젝트 관리
 - [ ] 다중 LLM 제공자 지원 (Anthropic, Gemini, Perplexity)
